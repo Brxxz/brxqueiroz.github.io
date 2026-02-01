@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>BRXQUEIROZ | CYBER WAR ROOM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#03060b;
+  --neon:#00f5d4;
+  --purple:#7c7cff;
+  --text:#e5e7eb;
+  --muted:#9ca3af;
+  --red:#ff3b3b;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif}
+
+body{
+  background:radial-gradient(circle at top,#0b1225,var(--bg));
+  color:var(--text);
+  overflow-x:hidden;
+}
+
+/* BACKGROUND */
+canvas{position:fixed;inset:0;z-index:-3}
+
+.scanlines{
+  position:fixed;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,.03),
+    rgba(255,255,255,.03) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+  z-index:5;
+}
+
+.cursor{
+  position:fixed;
+  width:22px;height:22px;
+  border-radius:50%;
+  background:rgba(0,245,212,.45);
+  filter:blur(10px);
+  pointer-events:none;
+  z-index:999;
+}
+
+/* LOGIN */
+#login{
+  position:fixed;inset:0;
+  background:#03060b;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+.login-box{
+  width:320px;
+  padding:40px;
+  border-radius:16px;
+  border:1px solid rgba(0,245,212,.4);
+  box-shadow:0 0 80px rgba(0,245,212,.35);
+}
+
+.login-box h1{
+  text-align:center;
+  color:var(--neon);
+  margin-bottom:25px;
+  letter-spacing:2px;
+}
+
+.login-box input{
+  width:100%;
+  padding:12px;
+  margin-bottom:15px;
+  background:#01040a;
+  border:1px solid rgba(0,245,212,.3);
+  color:var(--neon);
+}
+
+.login-box button{
+  width:100%;
+  padding:12px;
+  font-weight:800;
+  border:none;
+  cursor:pointer;
+  background:linear-gradient(90deg,var(--neon),var(--purple));
+}
+
+/* NAV */
+nav{
+  position:fixed;
+  top:0;width:100%;
+  padding:20px 60px;
+  display:flex;
+  justify-content:space-between;
+  backdrop-filter:blur(10px);
+  background:rgba(3,6,11,.7);
+  z-index:10;
+}
+
+nav h1{
+  font-weight:900;
+  background:linear-gradient(90deg,var(--neon),var(--purple));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+nav a{
+  margin-left:25px;
+  text-decoration:none;
+  font-size:.9rem;
+  color:var(--muted);
+}
+
+nav a:hover{color:var(--neon)}
+
+/* PAGES */
+.page{
+  min-height:100vh;
+  padding:140px 80px;
+  display:none;
+  align-items:center;
+}
+
+.page.active{display:flex}
+
+.container{max-width:1150px;margin:auto}
+
+/* GLITCH */
+.glitch{
+  font-size:4.5rem;
+  font-weight:900;
+  position:relative;
+  text-transform:uppercase;
+}
+
+.glitch::before,
+.glitch::after{
+  content:attr(data-text);
+  position:absolute;
+  left:0;
+  width:100%;
+}
+
+.glitch::before{
+  top:-2px;
+  color:var(--neon);
+  animation:g1 2s infinite;
+}
+
+.glitch::after{
+  top:2px;
+  color:var(--purple);
+  animation:g2 1.5s infinite;
+}
+
+@keyframes g1{
+  0%{clip-path:inset(10% 0 50% 0)}
+  50%{clip-path:inset(30% 0 20% 0)}
+}
+@keyframes g2{
+  0%{clip-path:inset(50% 0 10% 0)}
+  50%{clip-path:inset(20% 0 40% 0)}
+}
+
+/* TERMINAL */
+.terminal{
+  background:#01040a;
+  border:1px solid rgba(0,245,212,.35);
+  border-radius:16px;
+  padding:30px;
+  box-shadow:0 0 60px rgba(0,245,212,.35);
+  font-family:monospace;
+}
+
+.terminal-output{
+  max-height:300px;
+  overflow-y:auto;
+}
+
+.terminal-output p{color:var(--neon);margin-bottom:6px}
+
+.terminal input{
+  width:100%;
+  background:#000;
+  border:none;
+  color:var(--neon);
+  padding:10px;
+  font-family:monospace;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:30px;
+  margin-top:40px;
+}
+
+.card{
+  background:#01040a;
+  border:1px solid rgba(0,245,212,.3);
+  border-radius:16px;
+  padding:25px;
+  box-shadow:0 0 40px rgba(0,245,212,.2);
+}
+
+.card h3{color:var(--neon);margin-bottom:12px}
+
+/* MAP */
+.map{
+  height:400px;
+  position:relative;
+  border-radius:16px;
+  border:1px solid rgba(0,245,212,.3);
+  background:radial-gradient(circle,#02050a,#000);
+  overflow:hidden;
+}
+
+.attack{
+  position:absolute;
+  width:8px;height:8px;
+  border-radius:50%;
+  background:var(--red);
+  animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse{
+  0%{transform:scale(1);opacity:1}
+  100%{transform:scale(3);opacity:0}
+}
+
+footer{
+  padding:40px;
+  text-align:center;
+  color:var(--muted);
+  font-size:.8rem;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="matrix"></canvas>
+<div class="scanlines"></div>
+<div class="cursor" id="cursor"></div>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="login-box">
+    <h1>SECURE ACCESS</h1>
+    <input placeholder="user">
+    <input type="password" placeholder="password">
+    <button onclick="enter()">INITIALIZE</button>
+  </div>
+</div>
+
+<nav>
+  <h1>BRX WAR ROOM</h1>
+  <div>
+    <a href="#" onclick="go('home')">Dashboard</a>
+    <a href="#" onclick="go('programming')">Programming</a>
+    <a href="#" onclick="go('projects')">Projects</a>
+    <a href="#" onclick="go('terminal')">Terminal</a>
+    <a href="#" onclick="go('map')">Threat Map</a>
+    <a href="#" onclick="go('profile')">Profile</a>
+  </div>
+</nav>
+
+<section id="home" class="page active">
+  <div class="container">
+    <div class="glitch" data-text="BrxQueiroz">BrxQueiroz</div>
+    <p style="margin-top:25px;color:var(--muted);max-width:720px">
+      Este sistema não foi feito para impressionar.
+      Foi feito para funcionar.
+      Cada decisão reflete uma mentalidade voltada à segurança,
+      clareza e controle.
+    </p>
+  </div>
+</section>
+
+<section id="programming" class="page">
+  <div class="container">
+    <h2 style="color:var(--neon)">Programming & Engineering</h2>
+    <p style="margin-top:20px;color:var(--muted);max-width:800px">
+      Programação como engenharia: sistemas previsíveis,
+      código auditável e decisões conscientes.
+    </p>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Stack</h3>
+        <p>JavaScript • HTML • CSS</p>
+        <p>Lógica sólida • Estruturação</p>
+      </div>
+      <div class="card">
+        <h3>Mindset</h3>
+        <p>Clean Code • Segurança por design</p>
+        <p>Pensamento sistêmico</p>
+      </div>
+      <div class="card">
+        <h3>Arquitetura</h3>
+        <p>Separação de responsabilidades</p>
+        <p>Resiliência e escalabilidade</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projects" class="page">
+  <div class="container">
+    <h2 style="color:var(--neon)">Selected Projects</h2>
+    <div class="grid">
+      <div class="card"><h3>Cyber War Room</h3><p>Monitoramento e defesa simulada</p></div>
+      <div class="card"><h3>Secure Dashboards</h3><p>Interfaces administrativas seguras</p></div>
+      <div class="card"><h3>Threat Visualizer</h3><p>Eventos e ataques em tempo real</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="terminal" class="page">
+  <div class="container terminal">
+    <div class="terminal-output" id="out">
+      <p>> system online</p>
+      <p>> type 'help'</p>
+    </div>
+    <input id="cmd" placeholder="command">
+  </div>
+</section>
+
+<section id="map" class="page">
+  <div class="container">
+    <h2 style="color:var(--neon)">Global Threat Map</h2>
+    <div class="map" id="mapBox"></div>
+  </div>
+</section>
+
+<section id="profile" class="page">
+  <div class="container">
+    <h2 style="color:var(--neon)">Professional Profile</h2>
+    <div class="grid">
+      <div class="card">
+        <h3>Cybersecurity</h3>
+        <p>Threat modeling • Defesa em camadas</p>
+      </div>
+      <div class="card">
+        <h3>Infrastructure</h3>
+        <p>Redes • Servidores • Resiliência</p>
+      </div>
+      <div class="card">
+        <h3>Analysis</h3>
+        <p>Mapeamento de falhas • Mitigação</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+© 2026 • BRXQUEIROZ • CYBER WAR ROOM
+</footer>
+
+<script>
+// STATE
+const STATE={commands:0,level:"visitor",unlocked:[]};
+
+// LOGIN
+const audio=new Audio("https://cdn.pixabay.com/audio/2022/10/19/audio_1b7b7c6f3a.mp3");
+audio.loop=true;
+function enter(){
+  document.getElementById("login").style.display="none";
+  audio.play();
+}
+
+// NAV
+function go(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  window.scrollTo(0,0);
+}
+
+// CURSOR
+const cur=document.getElementById("cursor");
+addEventListener("mousemove",e=>{
+  cur.style.left=e.clientX+"px";
+  cur.style.top=e.clientY+"px";
+});
+
+// MATRIX
+const c=document.getElementById("matrix"),x=c.getContext("2d");
+c.width=innerWidth;c.height=innerHeight;
+const letters="01",f=14,cols=c.width/f,drops=Array(cols).fill(1);
+setInterval(()=>{
+  x.fillStyle="rgba(3,6,11,.08)";
+  x.fillRect(0,0,c.width,c.height);
+  x.fillStyle="#00f5d4";
+  x.font=f+"px monospace";
+  drops.forEach((y,i)=>{
+    x.fillText(letters[Math.random()*2|0],i*f,y*f);
+    if(y*f>c.height&&Math.random()>.975)drops[i]=0;
+    drops[i]++;
+  });
+},35);
+
+// TERMINAL
+const cmd=document.getElementById("cmd");
+const out=document.getElementById("out");
+const history=[];
+let hIndex=0;
+const commands=["help","scan","status","whoami","skills","projects","clear"];
+
+cmd.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    exec(cmd.value);
+    history.push(cmd.value);
+    hIndex=history.length;
+    cmd.value="";
+  }
+  if(e.key==="ArrowUp"&&hIndex>0)cmd.value=history[--hIndex];
+  if(e.key==="ArrowDown")cmd.value=history[++hIndex]||"";
+});
+
+function log(t){out.innerHTML+=`<p>> ${t}</p>`;out.scrollTop=out.scrollHeight}
+
+function exec(v){
+  STATE.commands++;
+  log(v);
+  if(v==="help")log(commands.join(" "));
+  else if(v==="scan")log("no threats detected ✔");
+  else if(v==="status")log("system stable");
+  else if(v==="whoami")log("brxqueiroz :: cyber engineer");
+  else if(v==="skills")log("js | security | infra | systems");
+  else if(v==="projects")log("cyber-war-room | dashboards");
+  else if(v==="clear")out.innerHTML="";
+  else log("unknown command");
+}
+
+// MAP
+const map=document.getElementById("mapBox");
+setInterval(()=>{
+  const a=document.createElement("div");
+  a.className="attack";
+  a.style.left=Math.random()*100+"%";
+  a.style.top=Math.random()*100+"%";
+  map.appendChild(a);
+  setTimeout(()=>a.remove(),1500);
+},700);
+</script>
+
+</body>
+</html>
